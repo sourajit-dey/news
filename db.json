@@ -1,23 +1,16 @@
 [
     {
+        "trend": "RBI Banning UPI Apps",
+        "verdict": "Fake News",
+        "analysis": " viral message claiming that RBI will ban PhonePe, GPay, and Paytm from February 28 is FALSE. The National Payments Corporation of India (NPCI) has clarified that there is no such ban. The confusion likely stems from an old Paytm Payments Bank directive which does not affect other UPI apps. Your money and apps are safe.",
+        "source": "NPCI Press Release",
+        "timestamp": "2026-02-04T20:53:31.201858"
+    },
+    {
         "trend": "Two terrorists killed in Kashmir",
         "verdict": "Verified",
-        "analysis": "Security forces neutralized two terrorists in an encounter in Jammu and Kashmir. The operation is ongoing. Reports confirmed by official police sources.",
-        "source": "India Today / NDTV",
-        "timestamp": "2026-02-04T20:48:29.226861"
-    },
-    {
-        "trend": "Supreme Court on NEET-PG",
-        "verdict": "Verified",
-        "analysis": "The Supreme Court has issued notice on a plea regarding the NEET-PG 2025 exam schedule. No stay order has been granted yet.",
-        "source": "LiveLaw",
-        "timestamp": "2026-02-04T20:48:29.226882"
-    },
-    {
-        "trend": "System Online",
-        "verdict": "Verified",
-        "analysis": "The Truth Engine is online. Waiting for first automated scan.",
-        "source": "System",
-        "timestamp": "2026-02-04T20:22:43.201691"
+        "analysis": "Security forces neutralized two terrorists in an encounter in the Sopore area of Jammu and Kashmir. Official police sources confirmed the operation was based on specific intelligence. Arms and ammunition were recovered from the site.",
+        "source": "India Today",
+        "timestamp": "2026-02-04T20:53:31.201874"
     }
 ]

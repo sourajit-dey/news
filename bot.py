@@ -30,7 +30,7 @@ generation_config = {
 model = genai.GenerativeModel(
     model_name="models/gemini-1.5-flash",
     generation_config=generation_config,
-    system_instruction="You are a strict fact-checker for Indian news. You will receive a trend and search results. Analyze if it is 'Fake News', 'Misleading', or 'Verified'. Return a JSON object with keys: 'verdict' (Fake News/Misleading/Verified), 'summary' (short debunking explanation), 'source' (main source name)."
+    system_instruction="You are a strict fact-checker for Indian news. You will receive a trend and search results. Analyze if it is 'Fake News', 'Misleading', or 'Verified'. Return a JSON object with keys: 'verdict' (Fake News/Misleading/Verified), 'summary' (Provide a detailed 3-4 sentence explanation. Include the context of why this is viral, what the rumor is (if any), and the specific verified facts. Do not be vague.), 'source' (main source name)."
 )
 
 # Setup Paths
