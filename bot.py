@@ -38,14 +38,30 @@ DB_FILE = "db.json"
 TEMPLATE_DIR = "templates"
 OUTPUT_FILE = "index.html"
 
+import requests
+import xml.etree.ElementTree as ET
+
+# ... (Imports remain the same, just adding requests/xml if needed, but requests is in variable scope usually or needs import)
+# Actually I need to make sure 'requests' is imported at top level. 
+# The replace tool works on chunks. I will do this logically.
+
 def get_viral_trends():
-    print("Fetching Google Trends...")
+    print("Fetching Google News RSS (India)...")
     try:
-        pytrends = TrendReq(hl='en-IN', tz=330)
-        trending_searches_df = pytrends.trending_searches(pn='india')
-        return trending_searches_df[0].head(3).tolist()
+        url = "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"
+        response = requests.get(url, timeout=15)
+        root = ET.fromstring(response.content)
+        trends = []
+        # Get top 5 items
+        for item in root.findall('./channel/item')[:5]:
+            title = item.find('title').text
+            # Remove source suffix for cleaner search (e.g. "News Title - NDTV")
+            if ' - ' in title:
+                title = title.rsplit(' - ', 1)[0]
+            trends.append(title)
+        return trends
     except Exception as e:
-        print(f"Error fetching trends: {e}")
+        print(f"Error fetching RSS: {e}")
         return []
 
 def verify_trend(trend):
@@ -159,6 +175,12 @@ async def main():
     setup_git()
     trends = get_viral_trends()
     
+    if not trends:
+        print("No trends found. Exiting.")
+        return
+
+    changes_made = False
+    
     for trend in trends:
         print(f"Processing: {trend}")
         analysis = verify_trend(trend)
@@ -166,10 +188,8 @@ async def main():
         if analysis:
             new_entry = update_database(trend, analysis)
             if new_entry:
-                generate_website()
-                publish_changes()
-                
-                # Only tweet if it's Fake News or Misleading to reduce spam
+                changes_made = True
+                # Only tweet if it's Fake News or Misleading
                 if new_entry['verdict'] in ['Fake News', 'Misleading']:
                      await tweet_alert(new_entry)
             else:
@@ -177,6 +197,10 @@ async def main():
         
         print("Sleeping 10s between trends...")
         time.sleep(10)
+    
+    # ALWAYS generate website to update "Last Updated" timestamp (Heartbeat)
+    generate_website()
+    publish_changes()
 
 if __name__ == "__main__":
     import asyncio
