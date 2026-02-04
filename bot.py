@@ -82,15 +82,23 @@ def verify_trend(trend):
     for attempt in range(retries):
         try:
             response = model.generate_content(prompt)
-            # Sleep to respect rate limits (SAFETY)
-            time.sleep(10) 
-            return json.loads(response.text)
+            text = response.text
+            # Clean markdown if present
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            
+            return json.loads(text.strip())
         except Exception as e:
             if "429" in str(e):
                 print("Rate limit hit (429). Sleeping for 60s...")
                 time.sleep(60)
             else:
                 print(f"Gemini error: {e}")
+                print(f"Raw response: {response.text if 'response' in locals() else 'No response'}")
                 return None
     return None
 
