@@ -170,11 +170,12 @@ async def tweet_alert(entry):
     try:
         client = Client(language='en-US')
         # Authenticate using cookies
-        client.set_cookies(
-            auth_token=TWITTER_AUTH_TOKEN,
-            ct0=TWITTER_CT0,
-            guest_id=TWITTER_GUEST_ID
-        )
+        cookies_dict = {
+            "auth_token": TWITTER_AUTH_TOKEN,
+            "ct0": TWITTER_CT0,
+            "guest_id": TWITTER_GUEST_ID
+        }
+        client.set_cookies(cookies_dict)
         
         emoji = "🔴" if "Fake" in entry['verdict'] else "🟢"
         text = f"{emoji} FACT CHECK: {entry['trend']}\n\nVerdict: {entry['verdict']}\n{entry['analysis']}\n\nCheck details: https://{GITHUB_REPO.split('/')[0]}.github.io/{GITHUB_REPO.split('/')[1]}"
