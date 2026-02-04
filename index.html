@@ -6,26 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Truth Engine India | AI Fact-Checking</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-color: #000000;
-            --glass-bg: rgba(22, 22, 24, 0.8);
+            --glass-bg: rgba(22, 22, 24, 0.85);
             --card-border: rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff;
             --text-secondary: #a1a1aa;
             --accent-fake: #ef4444;
-            /* Red */
             --accent-misleading: #f59e0b;
-            /* Amber */
             --accent-verified: #10b981;
-            /* Emerald */
             --glow: #3b82f6;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #000000 70%);
+            background-image: radial-gradient(circle at 50% 0%, #172554 0%, #000000 70%);
             color: var(--text-primary);
             margin: 0;
             padding: 0;
@@ -34,179 +32,229 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 20px;
         }
 
+        /* HEADER */
         header {
-            text-align: center;
-            margin-bottom: 60px;
-            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
         }
 
-        h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
+        .brand h1 {
+            font-size: 1.8rem;
             margin: 0;
-            letter-spacing: -2px;
+            font-weight: 800;
             background: linear-gradient(to right, #60a5fa, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(96, 165, 250, 0.3);
+            letter-spacing: -1px;
         }
 
-        .subtitle {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-top: 10px;
-        }
-
-        .last-updated {
+        .brand p {
+            margin: 0;
             font-size: 0.8rem;
-            color: #52525b;
-            margin-top: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: var(--text-secondary);
         }
 
-        .grid {
+        .status-dot {
+            color: var(--accent-verified);
+            font-size: 0.8rem;
+        }
+
+        /* GRID LAYOUT */
+        .news-grid {
             display: grid;
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
         }
 
+        /* HERO CARD (First Item) */
+        .card:first-child {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: row;
+            background: #09090b;
+        }
+
+        @media (max-width: 768px) {
+            .card:first-child {
+                flex-direction: column;
+            }
+        }
+
+        /* STANDARD CARD */
         .card {
             background: var(--glass-bg);
             border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            position: relative;
+            border-radius: 20px;
             overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
         }
 
         .card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.6);
             border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
-        /* Ambient Glow based on verdict */
-        .card.fake::before {
-            background: var(--accent-fake);
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--card-border);
         }
 
-        .card.misleading::before {
-            background: var(--accent-misleading);
+        .card:first-child .card-image {
+            width: 60%;
+            height: auto;
+            min-height: 350px;
+            border-bottom: none;
+            border-right: 1px solid var(--card-border);
         }
 
-        .card.verified::before {
-            background: var(--accent-verified);
+        @media (max-width: 768px) {
+            .card:first-child .card-image {
+                width: 100%;
+                height: 250px;
+                border-right: none;
+            }
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            opacity: 0.8;
-        }
-
-        .badge-row {
+        .card-content {
+            padding: 25px;
+            flex: 1;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            flex-direction: column;
         }
 
+        /* VERDICT BADGES */
         .badge {
-            font-size: 0.75rem;
+            display: inline-block;
+            font-size: 0.7rem;
             font-weight: 800;
             text-transform: uppercase;
-            padding: 6px 12px;
-            border-radius: 8px;
-            letter-spacing: 0.5px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
         }
 
-        .fake .badge {
-            background: rgba(239, 68, 68, 0.15);
+        .card.Fake-News .badge {
+            background: rgba(239, 68, 68, 0.2);
             color: var(--accent-fake);
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            border: 1px solid var(--accent-fake);
         }
 
-        .misleading .badge {
-            background: rgba(245, 158, 11, 0.15);
+        .card.Misleading .badge {
+            background: rgba(245, 158, 11, 0.2);
             color: var(--accent-misleading);
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            border: 1px solid var(--accent-misleading);
         }
 
-        .verified .badge {
-            background: rgba(16, 185, 129, 0.15);
+        .card.Verified .badge {
+            background: rgba(16, 185, 129, 0.2);
             color: var(--accent-verified);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 1px solid var(--accent-verified);
         }
 
+        /* TYPOGRAPHY */
         h2 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin: 0 0 15px 0;
             line-height: 1.3;
-            font-weight: 700;
+            color: #fff;
         }
 
-        .analysis {
+        .card:first-child h2 {
+            font-size: 2.2rem;
+        }
+
+        .rumor-box {
+            background: rgba(20, 20, 25, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 3px solid #52525b;
+        }
+
+        .rumor-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .rumor-text {
+            font-style: italic;
             color: #d4d4d8;
-            font-size: 1rem;
+        }
+
+        .fact-box {
             margin-bottom: 20px;
         }
 
-        .footer-meta {
+        .fact-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.85rem;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .fact-header i {
+            color: var(--accent-verified);
+        }
+
+        .fact-text {
             color: var(--text-secondary);
+            font-size: 0.95rem;
         }
 
-        .source {
+        .meta {
+            margin-top: auto;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 6px;
-        }
-
-        .source::before {
-            content: '•';
-            color: var(--glow);
-        }
-
-        a.check-btn {
-            background-color: #27272a;
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.8rem;
-            font-weight: 600;
-            transition: background 0.2s;
+            color: #71717a;
         }
 
-        a.check-btn:hover {
-            background-color: #3f3f46;
+        .share-btn {
+            background: none;
+            border: 1px solid #3f3f46;
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .share-btn:hover {
+            background: #fff;
+            color: #000;
         }
 
         footer {
             text-align: center;
-            margin-top: 80px;
+            padding: 60px 0;
             color: #52525b;
-            font-size: 0.9rem;
-        }
-
-        footer a {
-            color: #71717a;
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -214,49 +262,138 @@
 <body>
     <div class="container">
         <header>
-            <h1>TRUTH ENGINE</h1>
-            <div class="subtitle">Autonomous AI Surveillance System • India Region</div>
-            <div class="last-updated">2026-02-04 15:33:12 IST</div>
+            <div class="brand">
+                <h1>TRUTH ENGINE</h1>
+                <p>AI-Powered Surveillance System <span class="status-dot">● Online</span></p>
+                <div style="font-size: 0.7rem; color: #52525b; margin-top: 5px">2026-02-04 21:14:03 IST</div>
+            </div>
+            <div>
+                <a href="https://github.com/sourajit-dey/news" class="share-btn"><i class="fab fa-github"></i>
+                    Source</a>
+            </div>
         </header>
 
-        <div class="grid">
+        <div class="news-grid">
             
-            <div class="card fake-news">
-                <div class="badge-row">
-                    <span class="badge">Fake News</span>
-                    <span style="font-size: 0.8rem; color: #52525b;">#1</span>
+            <article class="card Verified">
+                
+                <img src="https://images.indianexpress.com/2024/07/SC-NEET-UG-2024-LIVE-UPDATES.jpg?w=640" alt="News Image" class="card-image"
+                    onerror="this.src='https://via.placeholder.com/800x400?text=Truth+Engine'">
+                
+
+                <div class="card-content">
+                    <div>
+                        <span class="badge">Verified</span>
+                        <h2>Supreme Court on NEET-PG</h2>
+
+                        
+                        <div class="rumor-box">
+                            <span class="rumor-label">Viral Claim</span>
+                            <span class="rumor-text">"Supreme Court has cancelled NEET-PG 2025."</span>
+                        </div>
+                        
+
+                        <div class="fact-box">
+                            <div class="fact-header">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="rumor-label" style="color: var(--accent-verified); margin:0;">The
+                                    Truth</span>
+                            </div>
+                            <div class="fact-text">FALSE. The Supreme Court has only issued a notice on a plea regarding the schedule. No stay order or cancellation has been granted. The exam is proceeding as planned.</div>
+                        </div>
+                    </div>
+
+                    <div class="meta">
+                        <span><i class="fas fa-newspaper"></i> LiveLaw</span>
+                        <a href="https://twitter.com/intent/tweet?text=Fact Check: Supreme Court on NEET-PG - Verified via Truth Engine&url=https://sourajit-dey.github.io/news"
+                            target="_blank" class="share-btn">
+                            <i class="fab fa-twitter"></i> Share
+                        </a>
+                    </div>
                 </div>
-                <h2>RBI Banning UPI Apps</h2>
-                <div class="analysis">
-                     viral message claiming that RBI will ban PhonePe, GPay, and Paytm from February 28 is FALSE. The National Payments Corporation of India (NPCI) has clarified that there is no such ban. The confusion likely stems from an old Paytm Payments Bank directive which does not affect other UPI apps. Your money and apps are safe.
-                </div>
-                <div class="footer-meta">
-                    <div class="source">Source: NPCI Press Release</div>
-                    <a href="https://twitter.com/search?q=RBI Banning UPI Apps" target="_blank" class="check-btn">Verify on
-                        X ↗</a>
-                </div>
-            </div>
+            </article>
             
-            <div class="card verified">
-                <div class="badge-row">
-                    <span class="badge">Verified</span>
-                    <span style="font-size: 0.8rem; color: #52525b;">#2</span>
+            <article class="card Fake-News">
+                
+                <img src="https://akm-img-a-in.tosshub.com/businesstoday/images/story/202212/digital-rupee-sixteen_nine.jpg" alt="News Image" class="card-image"
+                    onerror="this.src='https://via.placeholder.com/800x400?text=Truth+Engine'">
+                
+
+                <div class="card-content">
+                    <div>
+                        <span class="badge">Fake News</span>
+                        <h2>Digital Rupee Replacement</h2>
+
+                        
+                        <div class="rumor-box">
+                            <span class="rumor-label">Viral Claim</span>
+                            <span class="rumor-text">"Government will replace physical cash with Digital Rupee by March 31."</span>
+                        </div>
+                        
+
+                        <div class="fact-box">
+                            <div class="fact-header">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="rumor-label" style="color: var(--accent-verified); margin:0;">The
+                                    Truth</span>
+                            </div>
+                            <div class="fact-text">This is completely baseless. The Digital Rupee (e₹) is a complementary digital currency, not a replacement for physical cash. Verify official RBI notifications.</div>
+                        </div>
+                    </div>
+
+                    <div class="meta">
+                        <span><i class="fas fa-newspaper"></i> RBI / PIB Fact Check</span>
+                        <a href="https://twitter.com/intent/tweet?text=Fact Check: Digital Rupee Replacement - Fake News via Truth Engine&url=https://sourajit-dey.github.io/news"
+                            target="_blank" class="share-btn">
+                            <i class="fab fa-twitter"></i> Share
+                        </a>
+                    </div>
                 </div>
-                <h2>Two terrorists killed in Kashmir</h2>
-                <div class="analysis">
-                    Security forces neutralized two terrorists in an encounter in the Sopore area of Jammu and Kashmir. Official police sources confirmed the operation was based on specific intelligence. Arms and ammunition were recovered from the site.
+            </article>
+            
+            <article class="card Verified">
+                
+                <img src="https://images.hindustantimes.com/img/2022/01/04/1600x900/JK_encounter_1641263229671_1641263230154.jpg" alt="News Image" class="card-image"
+                    onerror="this.src='https://via.placeholder.com/800x400?text=Truth+Engine'">
+                
+
+                <div class="card-content">
+                    <div>
+                        <span class="badge">Verified</span>
+                        <h2>Two terrorists killed in Kashmir</h2>
+
+                        
+                        <div class="rumor-box">
+                            <span class="rumor-label">Viral Claim</span>
+                            <span class="rumor-text">"Terror attack ongoing in Srinagar."</span>
+                        </div>
+                        
+
+                        <div class="fact-box">
+                            <div class="fact-header">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="rumor-label" style="color: var(--accent-verified); margin:0;">The
+                                    Truth</span>
+                            </div>
+                            <div class="fact-text">Security forces successfully neutralized two terrorists in Sopore. The operation is concluded. Search operations are underway.</div>
+                        </div>
+                    </div>
+
+                    <div class="meta">
+                        <span><i class="fas fa-newspaper"></i> India Today</span>
+                        <a href="https://twitter.com/intent/tweet?text=Fact Check: Two terrorists killed in Kashmir - Verified via Truth Engine&url=https://sourajit-dey.github.io/news"
+                            target="_blank" class="share-btn">
+                            <i class="fab fa-twitter"></i> Share
+                        </a>
+                    </div>
                 </div>
-                <div class="footer-meta">
-                    <div class="source">Source: India Today</div>
-                    <a href="https://twitter.com/search?q=Two terrorists killed in Kashmir" target="_blank" class="check-btn">Verify on
-                        X ↗</a>
-                </div>
-            </div>
+            </article>
             
         </div>
 
         <footer>
-            Systems Nominal. <a href="https://github.com/sourajit-dey/news">Deploy Your Own.</a>
+            Systems Operational. Analyzing 24/7. <br>
+            Use responsibly. Verify independently.
         </footer>
     </div>
 </body>

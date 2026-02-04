@@ -10,6 +10,8 @@ from twikit import Client
 from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
 import subprocess
+import requests
+import xml.etree.ElementTree as ET
 
 # --- CONFIGURATION ---
 GEMINI_API_KEY = "AIzaSyB4mjb5rUQXbt702TMydxMQRRSuGdG3_Tc" # User provided key
@@ -30,20 +32,19 @@ generation_config = {
 model = genai.GenerativeModel(
     model_name="models/gemini-1.5-flash",
     generation_config=generation_config,
-    system_instruction="You are a strict fact-checker for Indian news. You will receive a trend and search results. Analyze if it is 'Fake News', 'Misleading', or 'Verified'. Return a JSON object with keys: 'verdict' (Fake News/Misleading/Verified), 'summary' (Provide a detailed 3-4 sentence explanation. Include the context of why this is viral, what the rumor is (if any), and the specific verified facts. Do not be vague.), 'source' (main source name)."
+    system_instruction="""You are a strict fact-checker for Indian news. Analyze if a trend is 'Fake News', 'Misleading', or 'Verified'. 
+    Return a JSON object with keys: 
+    - 'verdict' (Fake News/Misleading/Verified)
+    - 'rumor' (What is the viral claim? Keep it short & punchy. If Verified, state the news header.)
+    - 'reality' (What is the actual truth? Explain clearly. Debunk if fake.)
+    - 'analysis' (A detailed 3-sentence context for the website.)
+    - 'source' (Main source name)"""
 )
 
 # Setup Paths
 DB_FILE = "db.json"
 TEMPLATE_DIR = "templates"
 OUTPUT_FILE = "index.html"
-
-import requests
-import xml.etree.ElementTree as ET
-
-# ... (Imports remain the same, just adding requests/xml if needed, but requests is in variable scope usually or needs import)
-# Actually I need to make sure 'requests' is imported at top level. 
-# The replace tool works on chunks. I will do this logically.
 
 def get_viral_trends():
     print("Fetching Google News RSS (India)...")
@@ -52,10 +53,8 @@ def get_viral_trends():
         response = requests.get(url, timeout=15)
         root = ET.fromstring(response.content)
         trends = []
-        # Get top 5 items
         for item in root.findall('./channel/item')[:5]:
             title = item.find('title').text
-            # Remove source suffix for cleaner search (e.g. "News Title - NDTV")
             if ' - ' in title:
                 title = title.rsplit(' - ', 1)[0]
             trends.append(title)
@@ -63,6 +62,16 @@ def get_viral_trends():
     except Exception as e:
         print(f"Error fetching RSS: {e}")
         return []
+
+def get_image_url(query):
+    print(f"Fetching image for: {query}")
+    try:
+        results = DDGS().images(f"{query} news india", max_results=1)
+        if results:
+            return results[0]['image']
+    except Exception as e:
+        print(f"Image search failed: {e}")
+    return "https://via.placeholder.com/800x400?text=Truth+Engine+India" # Fallback
 
 def verify_trend(trend):
     print(f"Verifying trend: {trend}")
@@ -74,13 +83,12 @@ def verify_trend(trend):
         if results:
             context = "\n".join([f"- {r['title']}: {r['body']}" for r in results])
         else:
-            print("DDGS returned no results.")
             context = "Search returned no results. Verify based on internal knowledge if possible."
     except Exception as e:
         print(f"Search failed: {e}")
         context = "Search unavailable. Verify based on internal knowledge."
 
-    # 2. Gemini Analysis with Retry Logic
+    # 2. Gemini Analysis
     prompt = f"Trend: {trend}\n\nSearch Results:\n{context}"
     
     retries = 3
@@ -88,54 +96,49 @@ def verify_trend(trend):
         try:
             response = model.generate_content(prompt)
             text = response.text
-            # Clean markdown if present
-            if text.startswith("```json"):
-                text = text[7:]
-            if text.startswith("```"):
-                text = text[3:]
-            if text.endswith("```"):
-                text = text[:-3]
+            # Clean markdown
+            if text.startswith("```json"): text = text[7:]
+            if text.startswith("```"): text = text[3:]
+            if text.endswith("```"): text = text[:-3]
             
-            return json.loads(text.strip())
+            data = json.loads(text.strip())
+            
+            # Fetch Image ONLY if we have a verdict
+            data['image_url'] = get_image_url(trend)
+            return data
+            
         except Exception as e:
             if "429" in str(e):
                 print("Rate limit hit (429). Sleeping for 60s...")
                 time.sleep(60)
             else:
                 print(f"Gemini error: {e}")
-                print(f"Raw response: {response.text if 'response' in locals() else 'No response'}")
                 return None
     return None
 
 def update_database(trend, analysis):
     if not os.path.exists(DB_FILE):
-        with open(DB_FILE, 'w') as f:
-            json.dump([], f)
+        with open(DB_FILE, 'w') as f: json.dump([], f)
     
-    with open(DB_FILE, 'r') as f:
-        data = json.load(f)
+    with open(DB_FILE, 'r') as f: data = json.load(f)
     
-    # Check if already exists
-    if any(d['trend'] == trend for d in data):
-        return False # Already verified
+    if any(d['trend'] == trend for d in data): return False 
 
     new_entry = {
         "trend": trend,
         "verdict": analysis['verdict'],
-        "analysis": analysis['summary'],
+        "rumor": analysis['rumor'],
+        "reality": analysis['reality'],
+        "analysis": analysis['analysis'],
         "source": analysis['source'],
+        "image_url": analysis.get('image_url', ''),
         "timestamp": datetime.now().isoformat()
     }
     
-    # Add to top
     data.insert(0, new_entry)
-    
-    # Keep only last 50
     data = data[:50]
     
-    with open(DB_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
-    
+    with open(DB_FILE, 'w') as f: json.dump(data, f, indent=4)
     return new_entry
 
 def generate_website():
@@ -143,8 +146,7 @@ def generate_website():
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = env.get_template("index.html")
     
-    with open(DB_FILE, 'r') as f:
-        news_list = json.load(f)
+    with open(DB_FILE, 'r') as f: news_list = json.load(f)
         
     html_output = template.render(
         news_list=news_list,
@@ -152,8 +154,7 @@ def generate_website():
         github_repo=GITHUB_REPO
     )
     
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write(html_output)
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f: f.write(html_output)
 
 def setup_git():
     subprocess.run(["git", "config", "user.name", "TruthBot"], check=False)
@@ -172,7 +173,7 @@ async def tweet_alert(entry):
             language='en-US',
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
-        # Authenticate using cookies
+        
         cookies_dict = {
             "auth_token": TWITTER_AUTH_TOKEN,
             "ct0": TWITTER_CT0,
@@ -180,11 +181,40 @@ async def tweet_alert(entry):
         }
         client.set_cookies(cookies_dict)
         
-        emoji = "🔴" if "Fake" in entry['verdict'] else "🟢"
-        text = f"{emoji} FACT CHECK: {entry['trend']}\n\nVerdict: {entry['verdict']}\n{entry['analysis']}\n\nCheck details: https://{GITHUB_REPO.split('/')[0]}.github.io/{GITHUB_REPO.split('/')[1]}"
-        
-        await client.create_tweet(text=text)
+        # Determine Emoji & Text
+        if "Fake" in entry['verdict']:
+            header = "� FAKE NEWS ALERT"
+            emoji = "❌"
+        elif "Misleading" in entry['verdict']:
+            header = "⚠️ MISLEADING CLAIM"
+            emoji = "⚠️"
+        else:
+            # We usually don't verify 'Verified' news unless viral, or user wants all.
+            # Assuming we tweet all.
+            header = "✅ VERIFIED NEWS"
+            emoji = "🟢"
+
+        text = f"{header}\n\n{emoji} CLAIM: {entry['rumor']}\n\n👉 TRUTH: {entry['reality']}\n\n🔗 Full Story & Proof: https://{GITHUB_REPO.split('/')[0]}.github.io/{GITHUB_REPO.split('/')[1]}"
+
+        # Handle Image
+        media_ids = []
+        if entry.get('image_url') and "placeholder" not in entry['image_url']:
+            try:
+                # Download image to temp
+                img_data = requests.get(entry['image_url']).content
+                with open("temp_img.jpg", "wb") as f:
+                    f.write(img_data)
+                
+                # Upload to Twitter
+                media_id = await client.upload_media("temp_img.jpg")
+                media_ids.append(media_id)
+                os.remove("temp_img.jpg")
+            except Exception as e:
+                print(f"Image upload failed: {e}")
+
+        await client.create_tweet(text=text, media_ids=media_ids if media_ids else None)
         print("Tweet sent successfully!")
+
     except Exception as e:
         print(f"Twitter error: {e}")
 
@@ -206,16 +236,14 @@ async def main():
             new_entry = update_database(trend, analysis)
             if new_entry:
                 changes_made = True
-                # Only tweet if it's Fake News or Misleading
-                if new_entry['verdict'] in ['Fake News', 'Misleading']:
-                     await tweet_alert(new_entry)
+                # Tweet everything (or filter if desired, currently tweeting all new items)
+                await tweet_alert(new_entry)
             else:
                 print("Trend already in database.")
         
         print("Sleeping 10s between trends...")
         time.sleep(10)
     
-    # ALWAYS generate website to update "Last Updated" timestamp (Heartbeat)
     generate_website()
     publish_changes()
 
