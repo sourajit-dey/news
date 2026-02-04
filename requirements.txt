@@ -1,0 +1,5 @@
+pytrends
+duckduckgo-search
+google-generativeai
+twikit
+jinja2
