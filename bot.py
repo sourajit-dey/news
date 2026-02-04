@@ -28,7 +28,7 @@ generation_config = {
     "response_mime_type": "application/json",
 }
 model = genai.GenerativeModel(
-    model_name="gemini-pro",
+    model_name="models/gemini-1.5-flash",
     generation_config=generation_config,
     system_instruction="You are a strict fact-checker for Indian news. You will receive a trend and search results. Analyze if it is 'Fake News', 'Misleading', or 'Verified'. Return a JSON object with keys: 'verdict' (Fake News/Misleading/Verified), 'summary' (short debunking explanation), 'source' (main source name)."
 )
@@ -68,12 +68,17 @@ def verify_trend(trend):
     print(f"Verifying trend: {trend}")
     
     # 1. Search Context
+    context = ""
     try:
         results = DDGS().text(f"{trend} news india", max_results=5)
-        context = "\n".join([f"- {r['title']}: {r['body']}" for r in results])
+        if results:
+            context = "\n".join([f"- {r['title']}: {r['body']}" for r in results])
+        else:
+            print("DDGS returned no results.")
+            context = "Search returned no results. Verify based on internal knowledge if possible."
     except Exception as e:
         print(f"Search failed: {e}")
-        return None
+        context = "Search unavailable. Verify based on internal knowledge."
 
     # 2. Gemini Analysis with Retry Logic
     prompt = f"Trend: {trend}\n\nSearch Results:\n{context}"
