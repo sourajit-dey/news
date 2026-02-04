@@ -1,61 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>India Truth Engine | Initializing...</title>
+    <title>India Truth Engine | Live Debunking</title>
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-fake: #ef4444;
+            --accent-misleading: #f59e0b;
+            --accent-verified: #10b981;
+        }
         body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             margin: 0;
-            font-family: sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
             text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 20px;
         }
-
         h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
-        p {
-            color: #94a3b8;
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
-
-        .loader {
-            border: 4px solid #1e293b;
-            border-top: 4px solid #60a5fa;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+            border-left: 5px solid transparent;
         }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .card.fake { border-left-color: var(--accent-fake); }
+        .card.misleading { border-left-color: var(--accent-misleading); }
+        .card.verified { border-left-color: var(--accent-verified); }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+        .verdict-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        .fake .verdict-badge { background-color: rgba(239, 68, 68, 0.2); color: var(--accent-fake); }
+        .misleading .verdict-badge { background-color: rgba(245, 158, 11, 0.2); color: var(--accent-misleading); }
+        .verified .verdict-badge { background-color: rgba(16, 185, 129, 0.2); color: var(--accent-verified); }
 
-            100% {
-                transform: rotate(360deg);
-            }
+        h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        .summary {
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border-top: 1px solid #334155;
+            padding-top: 15px;
+        }
+        .source-link {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        .source-link:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
         }
     </style>
 </head>
-
 <body>
-    <div>
-        <div class="loader"></div>
-        <h1>Truth Engine Initializing</h1>
-        <p>The bot is running its first scan. Please check back in 2 minutes.</p>
-        <p><a href="https://github.com/sourajit-dey/news" style="color: #60a5fa;">View Source Code</a></p>
+    <div class="container">
+        <header>
+            <h1>Truth Engine India</h1>
+            <p>Automated Fact-Checking powered by AI</p>
+            <div class="last-updated">Last Updated: 2026-02-04 20:22:43 IST</div>
+        </header>
+
+        <div id="news-feed">
+            
+            <div class="card verified">
+                <span class="verdict-badge">Verified</span>
+                <h2>System Online</h2>
+                <div class="summary">
+                    The Truth Engine is online. Waiting for first automated scan.
+                </div>
+                <div class="meta">
+                    <span>Source: System</span>
+                    <a href="https://twitter.com/search?q=System Online" target="_blank" class="source-link">Check on X</a>
+                </div>
+            </div>
+            
+        </div>
+
+        <footer>
+            <p>Generated by Truth Engine Bot | <a href="https://github.com/sourajit-dey/news" class="source-link">View Source</a></p>
+        </footer>
     </div>
 </body>
-
 </html>
