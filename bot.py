@@ -168,7 +168,10 @@ def publish_changes():
 async def tweet_alert(entry):
     print("Sending Tweet Alert...")
     try:
-        client = Client(language='en-US')
+        client = Client(
+            language='en-US',
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
         # Authenticate using cookies
         cookies_dict = {
             "auth_token": TWITTER_AUTH_TOKEN,
