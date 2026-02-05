@@ -167,7 +167,14 @@ def publish_changes():
     subprocess.run(["git", "push"], check=False)
 
 async def tweet_alert(entry):
+    """Send a text-only tweet alert with link to full story"""
     print("Sending Tweet Alert...")
+    
+    # Skip if no Twitter credentials
+    if not TWITTER_AUTH_TOKEN:
+        print("⚠️ Twitter credentials not configured. Skipping tweet.")
+        return
+        
     try:
         client = Client(
             language='en-US',
@@ -181,42 +188,37 @@ async def tweet_alert(entry):
         }
         client.set_cookies(cookies_dict)
         
-        # Determine Emoji & Text
+        # Determine header based on verdict
         if "Fake" in entry['verdict']:
-            header = "� FAKE NEWS ALERT"
+            header = "🚨 FAKE NEWS ALERT"
             emoji = "❌"
         elif "Misleading" in entry['verdict']:
             header = "⚠️ MISLEADING CLAIM"
             emoji = "⚠️"
         else:
-            # We usually don't verify 'Verified' news unless viral, or user wants all.
-            # Assuming we tweet all.
             header = "✅ VERIFIED NEWS"
             emoji = "🟢"
 
-        text = f"{header}\n\n{emoji} CLAIM: {entry['rumor']}\n\n👉 TRUTH: {entry['reality']}\n\n🔗 Full Story & Proof: https://{GITHUB_REPO.split('/')[0]}.github.io/{GITHUB_REPO.split('/')[1]}"
+        # Compose tweet (text only - reliable)
+        text = f"""{header}
 
-        # Handle Image
-        media_ids = []
-        if entry.get('image_url') and "placeholder" not in entry['image_url']:
-            try:
-                # Download image to temp
-                img_data = requests.get(entry['image_url']).content
-                with open("temp_img.jpg", "wb") as f:
-                    f.write(img_data)
-                
-                # Upload to Twitter
-                media_id = await client.upload_media("temp_img.jpg")
-                media_ids.append(media_id)
-                os.remove("temp_img.jpg")
-            except Exception as e:
-                print(f"Image upload failed: {e}")
+{emoji} CLAIM: {entry['rumor']}
 
-        await client.create_tweet(text=text, media_ids=media_ids if media_ids else None)
-        print("Tweet sent successfully!")
+👉 TRUTH: {entry['reality']}
 
+🔗 Full Story & Images: https://{GITHUB_REPO.split('/')[0]}.github.io/{GITHUB_REPO.split('/')[1]}
+
+#TruthEngineIndia #FactCheck"""
+
+        # Send text-only tweet (no media - 100% reliable)
+        await client.create_tweet(text=text)
+        print("✅ Tweet sent successfully!")
+        
     except Exception as e:
-        print(f"Twitter error: {e}")
+        print(f"❌ Twitter error: {e}")
+        # Don't crash the bot if Twitter fails
+        pass
+
 
 async def main():
     setup_git()
