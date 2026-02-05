@@ -30,7 +30,7 @@ generation_config = {
     "response_mime_type": "application/json",
 }
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash-latest",
+    model_name="models/gemini-2.5-flash",
     generation_config=generation_config,
     system_instruction="""You are a strict fact-checker for Indian news. Analyze if a trend is 'Fake News', 'Misleading', or 'Verified'. 
     Return a JSON object with keys: 
